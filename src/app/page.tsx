@@ -5,6 +5,9 @@ async function getFlyingData() {
     ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
     : "http://localhost:3000";
   const res = await fetch(`${baseUrl}/api/flying`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Fetch failed: ${res.status} ${await res.text()}`);
+  }
   return res.json();
 }
 
