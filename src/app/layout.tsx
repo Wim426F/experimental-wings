@@ -6,7 +6,10 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Experimental Wings",
-  description: "Track Flights, Connect Enthusiasts",
+  description: "Track Homebuilt Airplanes",
+  icons: {
+    icon: "/airplane-favicon.ico", // Points to public/airplane-favicon.ico
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="h-[calc(100vh-8rem)]">{children}</main>
         <footer className="p-4 bg-gray-800 text-white text-center">
-          Track Flights, Connect Enthusiasts
+          Track Homebuilt Airplanes
         </footer>
       </body>
     </html>
