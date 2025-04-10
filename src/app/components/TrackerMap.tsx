@@ -8,7 +8,7 @@ const createAirplaneIcon = (heading: number) =>
     html: `
       <img
         src="/airplane-icon.png"
-        style="width: 32px; height: 32px; transform: rotate(${heading}deg); transform-origin: center;"
+        style="width: 32px; height: 32px; transform: rotate(${heading-90}deg); transform-origin: center;"
       />
     `,
     className: "",
@@ -61,23 +61,22 @@ export default function TrackerMap({
           <Popup>
             <div>
               <h3 className="text-lg font-semibold">
-                <button onClick={() => onRegClick(aircraft)} className="text-sky-800 hover:underline">
+                <button onClick={() => onRegClick(aircraft)} className="text-blue-800 hover:underline hover:text-blue-900">
                   {aircraft.reg}
                 </button>
               </h3>
               <p className="text-sm">
                 <span className="text-gray-600">Brand:</span>{" "}
-                <button onClick={() => onBrandClick(aircraft)} className="text-sky-800 hover:underline">
+                <button onClick={() => onBrandClick(aircraft)} className="text-blue-800 hover:underline hover:text-blue-900">
                   {aircraft.brand}
                 </button>{" "}
                 <span className="text-gray-600">Type:</span>{" "}
-                <button onClick={() => onTypeClick(aircraft)} className="text-sky-800 hover:underline">
+                <button onClick={() => onTypeClick(aircraft)} className="text-blue-800 hover:underline hover:text-blue-900">
                   {aircraft.type}
                 </button>
               </p>
-              <p className="text-sm"><span className="text-gray-600">Status:</span> {aircraft.details}</p>
-              <p className="text-sm"><span className="text-gray-600">Altitude:</span> {aircraft.alt_baro} ft &nbsp;({Math.round(aircraft.alt_baro / 3.28)}&nbsp;m)</p>
-              <p className="text-sm"><span className="text-gray-600">Ground Speed:</span> {aircraft.gs} knots</p>
+              <p className="text-sm"><span className="text-gray-600">Altitude:</span> {aircraft.alt_baro} ft ({Math.round(aircraft.alt_baro / 3.28)} m)</p>
+              <p className="text-sm"><span className="text-gray-600">Ground Speed:</span> {aircraft.gs} knots ({Math.round(aircraft.gs / 0.62)} km/h)</p>
               <p className="text-sm"><span className="text-gray-600">Heading:</span> {aircraft.heading}°</p>
             </div>
           </Popup>

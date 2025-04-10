@@ -1,4 +1,4 @@
-import MapWrapper from "./components/MapWrapper";
+import MapWrapper from "./components/FlightTracker";
 
 async function getFlyingData() {
   const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL

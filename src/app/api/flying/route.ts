@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const mockData = [
     {
-      reg: "PH-RVT",
+      reg: "PH-WIM",
       lat: 52.3,
       lon: 5.6,
       heading: 45,
@@ -20,15 +20,15 @@ export async function GET() {
       },
     },
     {
-      reg: "PH-SMD",
+      reg: "PH-BOO",
       lat: 52.4,
       lon: 5.7,
       heading: 270,
       alt_baro: 3000,
       gs: 100,
       ias: 95,
-      brand: "Sling",
-      type: "TSI",
+      brand: "Sonex",
+      type: "Waiex",
       details: "Flying",
       lastPosition: {
         lat: 52.41,
