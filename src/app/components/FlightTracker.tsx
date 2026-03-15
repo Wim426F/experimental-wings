@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
-import { format, differenceInMinutes } from "date-fns";
+import type { StrapiBrand, StrapiModel, StrapiAircraft } from "../../lib/strapi";
 
 const TrackerMap = dynamic(() => import("./TrackerMap"), { ssr: false });
 
@@ -23,290 +23,30 @@ type Aircraft = {
   };
 };
 
-type BrandData = {
-  [key: string]: {
-    description: string;
-    link: string;
-    models: string[];
-  };
-};
-
-const brandData: BrandData = {
-  Vans: {
-    description: "Vans Aircraft is a leading manufacturer of experimental kit planes, known for their RV series.",
-    link: "https://en.wikipedia.org/wiki/Vans_Aircraft",
-    models: ["RV-8", "RV-10", "RV-14"],
-  },
-  Sonex: {
-    description: "Sonex Aircraft specializes in affordable, high-performance kit planes for amateur builders.",
-    link: "https://en.wikipedia.org/wiki/Sonex_Aircraft",
-    models: ["Sonex", "Waiex", "Onex"],
-  },
-};
-
-type ModelData = {
-  [key: string]: {
-    description: string;
-    imageGallery: string[];
-    link: string;
-    generalInfo: {
-      brand: string;
-      topSpeed: string;
-      mtow: string;
-    };
-    registrations: string[];
-  };
-};
-
-const modelData: ModelData = {
-  "Vans RV-8": {
-    description: "The RV-8 is a two-seat, tandem kit plane known for its aerobatic capabilities.",
-    imageGallery: [
-      "https://example.com/images/rv-8-1.jpg",
-      "https://example.com/images/rv-8-2.jpg",
-    ],
-    link: "https://en.wikipedia.org/wiki/Vans_RV-8",
-    generalInfo: {
-      brand: "Vans",
-      topSpeed: "220 knots",
-      mtow: "1800 lbs",
-    },
-    registrations: ["PH-XYZ"],
-  },
-  "Vans RV-10": {
-    description: "The RV-10 is a four-seat kit plane designed for cross-country travel.",
-    imageGallery: [
-      "https://example.com/images/rv-10-1.jpg",
-      "https://example.com/images/rv-10-2.jpg",
-    ],
-    link: "https://en.wikipedia.org/wiki/Vans_RV-10",
-    generalInfo: {
-      brand: "Vans",
-      topSpeed: "200 knots",
-      mtow: "2700 lbs",
-    },
-    registrations: ["PH-WIM"],
-  },
-  "Vans RV-14": {
-    description: "The RV-14 is a modern two-seat kit plane with improved performance.",
-    imageGallery: [
-      "https://example.com/images/rv-14-1.jpg",
-      "https://example.com/images/rv-14-2.jpg",
-    ],
-    link: "https://en.wikipedia.org/wiki/Vans_RV-14",
-    generalInfo: {
-      brand: "Vans",
-      topSpeed: "210 knots",
-      mtow: "2050 lbs",
-    },
-    registrations: [],
-  },
-  "Sonex Sonex": {
-    description: "The Sonex is a two-seat kit plane known for its simplicity and efficiency.",
-    imageGallery: [
-      "https://example.com/images/sonex-1.jpg",
-      "https://example.com/images/sonex-2.jpg",
-    ],
-    link: "https://en.wikipedia.org/wiki/Sonex_Aircraft_Sonex",
-    generalInfo: {
-      brand: "Sonex",
-      topSpeed: "170 knots",
-      mtow: "1150 lbs",
-    },
-    registrations: ["PH-ABC"],
-  },
-  "Sonex Waiex": {
-    description: "The Waiex is a Y-tail variant of the Sonex, offering a unique design.",
-    imageGallery: [
-      "https://example.com/images/waiex-1.jpg",
-      "https://example.com/images/waiex-2.jpg",
-    ],
-    link: "https://en.wikipedia.org/wiki/Sonex_Aircraft_Waiex",
-    generalInfo: {
-      brand: "Sonex",
-      topSpeed: "165 knots",
-      mtow: "1150 lbs",
-    },
-    registrations: ["PH-BOO", "PH-SMD"],
-  },
-  "Sonex Onex": {
-    description: "The Onex is a single-seat kit plane designed for sport flying.",
-    imageGallery: [
-      "https://example.com/images/onex-1.jpg",
-      "https://example.com/images/onex-2.jpg",
-    ],
-    link: "https://en.wikipedia.org/wiki/Sonex_Aircraft_Onex",
-    generalInfo: {
-      brand: "Sonex",
-      topSpeed: "160 knots",
-      mtow: "950 lbs",
-    },
-    registrations: [],
-  },
-};
-
-type RegistrationData = {
-  [key: string]: {
-    description: string;
-    imageGallery: string[];
-    links: string[];
-    brand: string;
-    type: string;
-    flightHistory: {
-      takeoff: string;
-      landing: string;
-      takeoffDateTime: string;
-      landingDateTime: string;
-      distance: number; // Distance in km
-    }[];
-  };
-};
-
-const registrationData: RegistrationData = {
-  "PH-WIM": {
-    description: "This is a Vans RV-10 built by a local enthusiast in 2020. Known for its sleek design and performance.",
-    imageGallery: [
-      "https://example.com/images/ph-rvt-1.jpg",
-      "https://example.com/images/ph-rvt-2.jpg",
-    ],
-    links: [
-      "https://planespotters.net/aircraft/PH-RVT",
-      "https://flightaware.com/live/flight/PH-RVT",
-    ],
-    brand: "Vans",
-    type: "RV-10",
-    flightHistory: [
-      {
-        takeoff: "Schiphol",
-        landing: "Eindhoven",
-        takeoffDateTime: "2025-04-08T14:30:00Z",
-        landingDateTime: "2025-04-08T16:00:00Z",
-        distance: 110, // Approximate distance in km
-      },
-      {
-        takeoff: "Eindhoven",
-        landing: "Rotterdam",
-        takeoffDateTime: "2025-04-06T10:00:00Z",
-        landingDateTime: "2025-04-06T11:00:00Z",
-        distance: 85, // Approximate distance in km
-      },
-    ],
-  },
-  "PH-BOO": {
-    description: "A Sonex model built in 2018, often seen flying around Utrecht.",
-    imageGallery: [
-      "https://example.com/images/ph-smd-1.jpg",
-      "https://example.com/images/ph-smd-2.jpg",
-    ],
-    links: [
-      "https://planespotters.net/aircraft/PH-SMD",
-      "https://flightaware.com/live/flight/PH-SMD",
-    ],
-    brand: "Sonex",
-    type: "Waiex",
-    flightHistory: [
-      {
-        takeoff: "Utrecht",
-        landing: "Amsterdam",
-        takeoffDateTime: "2025-04-09T12:00:00Z",
-        landingDateTime: "2025-04-09T12:30:00Z",
-        distance: 35, // Approximate distance in km
-      },
-      {
-        takeoff: "Amsterdam",
-        landing: "Utrecht",
-        takeoffDateTime: "2025-04-07T15:00:00Z",
-        landingDateTime: "2025-04-07T15:30:00Z",
-        distance: 35, // Approximate distance in km
-      },
-    ],
-  },
-  "PH-XYZ": {
-    description: "A Vans RV-8 spotted frequently in Amsterdam airspace.",
-    imageGallery: [
-      "https://example.com/images/ph-xyz-1.jpg",
-      "https://example.com/images/ph-xyz-2.jpg",
-    ],
-    links: [
-      "https://planespotters.net/aircraft/PH-XYZ",
-      "https://flightaware.com/live/flight/PH-XYZ",
-    ],
-    brand: "Vans",
-    type: "RV-8",
-    flightHistory: [
-      {
-        takeoff: "Schiphol",
-        landing: "Rotterdam",
-        takeoffDateTime: "2025-04-11T14:30:00Z",
-        landingDateTime: "2025-04-11T15:00:00Z",
-        distance: 45, // Approximate distance in km
-      },
-      {
-        takeoff: "Rotterdam",
-        landing: "Schiphol",
-        takeoffDateTime: "2025-04-10T09:00:00Z",
-        landingDateTime: "2025-04-10T09:30:00Z",
-        distance: 45, // Approximate distance in km
-      },
-    ],
-  },
-  "PH-ABC": {
-    description: "A Sonex aircraft known for its vibrant paint job.",
-    imageGallery: [
-      "https://example.com/images/ph-abc-1.jpg",
-      "https://example.com/images/ph-abc-2.jpg",
-    ],
-    links: [
-      "https://planespotters.net/aircraft/PH-ABC",
-      "https://flightaware.com/live/flight/PH-ABC",
-    ],
-    brand: "Sonex",
-    type: "Sonex",
-    flightHistory: [
-      {
-        takeoff: "Eindhoven",
-        landing: "Utrecht",
-        takeoffDateTime: "2025-04-11T09:00:00Z",
-        landingDateTime: "2025-04-11T09:30:00Z",
-        distance: 50, // Approximate distance in km
-      },
-      {
-        takeoff: "Utrecht",
-        landing: "Eindhoven",
-        takeoffDateTime: "2025-04-09T14:00:00Z",
-        landingDateTime: "2025-04-09T14:30:00Z",
-        distance: 50, // Approximate distance in km
-      },
-    ],
-  },
-};
-
-const pastFlights = [
-  {
-    reg: "PH-XYZ",
-    brand: "Vans",
-    type: "RV-8",
-    takeoff: "Schiphol",
-    landing: "Rotterdam",
-    takeoffDateTime: "2025-04-11T14:30:00Z",
-    landingDateTime: "2025-04-11T15:00:00Z",
-    distance: 45, // Approximate distance in km
-  },
-  {
-    reg: "PH-ABC",
-    brand: "Sonex",
-    type: "Sonex",
-    takeoff: "Eindhoven",
-    landing: "Utrecht",
-    takeoffDateTime: "2025-04-11T09:00:00Z",
-    landingDateTime: "2025-04-11T09:30:00Z",
-    distance: 50, // Approximate distance in km
-  },
-];
-
-export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
+export default function FlightTracker({
+  brands,
+  models,
+  strapiAircraft,
+}: {
+  brands: StrapiBrand[];
+  models: StrapiModel[];
+  strapiAircraft: StrapiAircraft[];
+}) {
+  const [liveFlying, setLiveFlying] = useState<Aircraft[]>([]);
   const [sidebarContent, setSidebarContent] = useState<"default" | "all-brands" | "reg" | "brand" | "type">("default");
   const [selectedAircraft, setSelectedAircraft] = useState<Aircraft | null>(null);
+
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/flying");
+        if (res.ok) setLiveFlying(await res.json());
+      } catch {}
+    };
+    poll();
+    const interval = setInterval(poll, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<
@@ -323,26 +63,27 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
     const lowerQuery = query.toLowerCase();
     const results: { type: "brand" | "model" | "reg"; name: string; brand?: string; model?: string }[] = [];
 
-    // Search brands
-    Object.keys(brandData).forEach((key) => {
-      if (key.toLowerCase().includes(lowerQuery)) {
-        results.push({ type: "brand", name: key });
+    brands.forEach((b) => {
+      if (b.name.toLowerCase().includes(lowerQuery)) {
+        results.push({ type: "brand", name: b.name });
       }
     });
 
-    // Search models
-    Object.keys(modelData).forEach((key) => {
-      if (key.toLowerCase().includes(lowerQuery)) {
-        const [brand, model] = key.split(" ");
-        results.push({ type: "model", name: key, brand, model });
+    models.forEach((m) => {
+      const fullName = `${m.brand?.name ?? ""} ${m.name}`;
+      if (fullName.toLowerCase().includes(lowerQuery) || m.name.toLowerCase().includes(lowerQuery)) {
+        results.push({ type: "model", name: m.name, brand: m.brand?.name ?? "", model: m.name });
       }
     });
 
-    // Search registrations
-    Object.keys(registrationData).forEach((reg) => {
-      if (reg.toLowerCase().includes(lowerQuery)) {
-        const { brand, type: model } = registrationData[reg];
-        results.push({ type: "reg", name: reg, brand, model });
+    strapiAircraft.forEach((a) => {
+      if (a.registration.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          type: "reg",
+          name: a.registration,
+          brand: a.model?.brand?.name ?? "",
+          model: a.model?.name ?? "",
+        });
       }
     });
 
@@ -359,18 +100,6 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
       clearSearch();
     }
   }, [sidebarContent]);
-
-  const formatDuration = (start: string, end: string) => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const minutes = differenceInMinutes(endDate, startDate);
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    if (hours > 0) {
-      return `${hours}h ${remainingMinutes}m`;
-    }
-    return `${remainingMinutes}m`;
-  };
 
   const handleRegClick = (aircraft: Aircraft) => {
     setSelectedAircraft(aircraft);
@@ -392,11 +121,34 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
     setSelectedAircraft(null);
   };
 
+  // Derived Strapi lookups
+  const selectedBrand = selectedAircraft
+    ? brands.find((b) => b.name === selectedAircraft.brand) ?? null
+    : null;
+
+  const brandModels = selectedAircraft
+    ? models.filter((m) => m.brand?.name === selectedAircraft.brand)
+    : [];
+
+  const selectedModel = selectedAircraft
+    ? models.find((m) => m.name === selectedAircraft.type && m.brand?.name === selectedAircraft.brand) ?? null
+    : null;
+
+  const modelAircraft = selectedAircraft
+    ? strapiAircraft.filter(
+        (a) => a.model?.name === selectedAircraft.type && a.model?.brand?.name === selectedAircraft.brand
+      )
+    : [];
+
+  const selectedRegistration = selectedAircraft
+    ? strapiAircraft.find((a) => a.registration === selectedAircraft.reg) ?? null
+    : null;
+
   return (
     <div className="flex h-[calc(100vh-8rem)]">
       <div className="w-2/3">
         <TrackerMap
-          flying={flying}
+          flying={liveFlying}
           onRegClick={handleRegClick}
           onBrandClick={handleBrandClick}
           onTypeClick={handleTypeClick}
@@ -414,59 +166,7 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
               Browse All Experimental Wings
             </button>
             <h3 className="text-lg font-semibold mb-2">Recent Flights</h3>
-            <ul className="space-y-2">
-              {pastFlights.map((flight, index) => (
-                <li
-                  key={index}
-                  className="bg-gray-50 p-2 rounded-md shadow-sm border border-gray-200 overflow-visible"
-                >
-                  <div className="flex justify-between mb-1">
-                    <button
-                      onClick={() =>
-                        handleRegClick({
-                          reg: flight.reg,
-                          lat: 0,
-                          lon: 0,
-                          heading: 0,
-                          alt_baro: 0,
-                          gs: 0,
-                          ias: 0,
-                          brand: flight.brand,
-                          type: flight.type,
-                          details: "Unknown",
-                          lastPosition: { lat: 0, lon: 0, seen_pos: 0 },
-                        })
-                      }
-                      className="font-medium text-sm text-blue-800 hover:underline hover:text-blue-900"
-                    >
-                      {flight.reg}
-                    </button>
-                    <span className="font-medium text-sm text-blue-800">
-                      {flight.brand} {flight.type}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>{flight.takeoff}</span>
-                    <span>{flight.landing}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm mb-1">
-                    <span>{format(new Date(flight.takeoffDateTime), "HH:mm")}</span>
-                    <span className="text-xs text-gray-600">
-                      {format(new Date(flight.takeoffDateTime), "dd/MM/yyyy")}
-                    </span>
-                    <span>{format(new Date(flight.landingDateTime), "HH:mm")}</span>
-                  </div>
-                  <div className="flex items-center mb-1">
-                    <span className="w-3 h-3 bg-gray-600 rounded-full relative -mr-1 ml-0.5"></span>
-                    <div className="flex-1 border-t border-gray-400 mx-0"></div>
-                    <span className="w-3 h-3 bg-gray-600 rounded-full relative -ml-1"></span>
-                  </div>
-                  <div className="text-xs text-gray-600 text-center">
-                    {formatDuration(flight.takeoffDateTime, flight.landingDateTime)}, {flight.distance} km
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <p className="text-sm text-gray-500">No recent flights yet.</p>
           </div>
         )}
         {sidebarContent === "all-brands" && (
@@ -503,12 +203,7 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
                         onClick={() => {
                           handleBrandClick({
                             reg: "",
-                            lat: 0,
-                            lon: 0,
-                            heading: 0,
-                            alt_baro: 0,
-                            gs: 0,
-                            ias: 0,
+                            lat: 0, lon: 0, heading: 0, alt_baro: 0, gs: 0, ias: 0,
                             brand: result.name,
                             type: "",
                             details: "",
@@ -526,12 +221,7 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
                         onClick={() => {
                           handleTypeClick({
                             reg: "",
-                            lat: 0,
-                            lon: 0,
-                            heading: 0,
-                            alt_baro: 0,
-                            gs: 0,
-                            ias: 0,
+                            lat: 0, lon: 0, heading: 0, alt_baro: 0, gs: 0, ias: 0,
                             brand: result.brand!,
                             type: result.model!,
                             details: "",
@@ -541,7 +231,7 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
                         }}
                         className="text-blue-800 hover:underline hover:text-blue-900"
                       >
-                        {result.name} (Model)
+                        {result.brand} {result.name} (Model)
                       </button>
                     )}
                     {result.type === "reg" && (
@@ -549,12 +239,7 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
                         onClick={() => {
                           handleRegClick({
                             reg: result.name,
-                            lat: 0,
-                            lon: 0,
-                            heading: 0,
-                            alt_baro: 0,
-                            gs: 0,
-                            ias: 0,
+                            lat: 0, lon: 0, heading: 0, alt_baro: 0, gs: 0, ias: 0,
                             brand: result.brand!,
                             type: result.model!,
                             details: "",
@@ -571,21 +256,19 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
                 ))}
               </ul>
             )}
-            {(!searchQuery || searchResults.length === 0) && (
+            {searchQuery && searchResults.length === 0 && (
+              <p className="text-sm text-gray-500">No results found.</p>
+            )}
+            {!searchQuery && (
               <ul className="space-y-2">
-                {Object.keys(brandData).map((brand) => (
-                  <li key={brand}>
+                {brands.map((brand) => (
+                  <li key={brand.documentId}>
                     <button
                       onClick={() =>
                         handleBrandClick({
                           reg: "",
-                          lat: 0,
-                          lon: 0,
-                          heading: 0,
-                          alt_baro: 0,
-                          gs: 0,
-                          ias: 0,
-                          brand,
+                          lat: 0, lon: 0, heading: 0, alt_baro: 0, gs: 0, ias: 0,
+                          brand: brand.name,
                           type: "",
                           details: "",
                           lastPosition: { lat: 0, lon: 0, seen_pos: 0 },
@@ -593,7 +276,7 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
                       }
                       className="text-blue-800 hover:underline hover:text-blue-900"
                     >
-                      {brand}
+                      {brand.name}
                     </button>
                   </li>
                 ))}
@@ -617,42 +300,37 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
                 Back to Home
               </button>
             </div>
-            {brandData[selectedAircraft.brand] ? (
+            {selectedBrand ? (
               <div>
-                <p className="mb-4">{brandData[selectedAircraft.brand].description}</p>
+                {selectedBrand.description && (
+                  <p className="mb-4">{selectedBrand.description}</p>
+                )}
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold">Models</h3>
-                  <ul className="list-disc pl-5">
-                    {brandData[selectedAircraft.brand].models.map((model: string, index: number) => (
-                      <li key={index} className="text-blue-800 hover:underline hover:text-blue-900">
-                        <button
-                          onClick={() =>
-                            handleTypeClick({
-                              ...selectedAircraft,
-                              type: model,
-                            })
-                          }
-                        >
-                          {model}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  {brandModels.length > 0 ? (
+                    <ul className="list-disc pl-5">
+                      {brandModels.map((m) => (
+                        <li key={m.documentId} className="text-blue-800 hover:underline hover:text-blue-900">
+                          <button
+                            onClick={() =>
+                              handleTypeClick({
+                                ...selectedAircraft,
+                                type: m.name,
+                              })
+                            }
+                          >
+                            {m.name}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500">No models found for this brand.</p>
+                  )}
                 </div>
-                <p>
-                  <strong>Learn More:</strong>{" "}
-                  <a
-                    href={brandData[selectedAircraft.brand].link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-800 hover:underline hover:text-blue-900"
-                  >
-                    Wikipedia
-                  </a>
-                </p>
               </div>
             ) : (
-              <p>No brand data available for {selectedAircraft.brand}.</p>
+              <p>No data available for {selectedAircraft.brand}.</p>
             )}
           </div>
         )}
@@ -684,7 +362,7 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
                 Back to Home
               </button>
             </div>
-            {modelData[`${selectedAircraft.brand} ${selectedAircraft.type}`] ? (
+            {selectedModel ? (
               <div>
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold mb-2">General Information</h3>
@@ -692,66 +370,51 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
                     <tbody>
                       <tr>
                         <td className="font-medium pr-2">Brand:</td>
-                        <td>{modelData[`${selectedAircraft.brand} ${selectedAircraft.type}`].generalInfo.brand}</td>
+                        <td>{selectedModel.brand?.name ?? "—"}</td>
                       </tr>
-                      <tr>
-                        <td className="font-medium pr-2">Top Speed:</td>
-                        <td>{modelData[`${selectedAircraft.brand} ${selectedAircraft.type}`].generalInfo.topSpeed}</td>
-                      </tr>
-                      <tr>
-                        <td className="font-medium pr-2">MTOW:</td>
-                        <td>{modelData[`${selectedAircraft.brand} ${selectedAircraft.type}`].generalInfo.mtow}</td>
-                      </tr>
+                      {selectedModel.configuration && (
+                        <tr>
+                          <td className="font-medium pr-2">Configuration:</td>
+                          <td>{selectedModel.configuration}</td>
+                        </tr>
+                      )}
+                      {selectedModel.gross_weight != null && (
+                        <tr>
+                          <td className="font-medium pr-2">MTOW:</td>
+                          <td>{selectedModel.gross_weight} kg</td>
+                        </tr>
+                      )}
+                      {selectedModel.empty_weight != null && (
+                        <tr>
+                          <td className="font-medium pr-2">Empty Weight:</td>
+                          <td>{selectedModel.empty_weight} kg</td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
-                <p className="mb-4">{modelData[`${selectedAircraft.brand} ${selectedAircraft.type}`].description}</p>
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold">Image Gallery</h3>
-                  <div className="flex space-x-2 overflow-x-auto">
-                    {modelData[`${selectedAircraft.brand} ${selectedAircraft.type}`].imageGallery.map((image: string, index: number) => (
-                      <img
-                        key={index}
-                        src={image}
-                        alt={`${selectedAircraft.brand} ${selectedAircraft.type} image ${index + 1}`}
-                        className="h-24 w-24 object-cover rounded"
-                      />
-                    ))}
-                  </div>
-                </div>
-                <p className="mb-4">
-                  <strong>Learn More:</strong>{" "}
-                  <a
-                    href={modelData[`${selectedAircraft.brand} ${selectedAircraft.type}`].link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-800 hover:underline hover:text-blue-900"
-                  >
-                    Wikipedia
-                  </a>
-                </p>
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Registrations</h3>
-                  {modelData[`${selectedAircraft.brand} ${selectedAircraft.type}`].registrations.length > 0 ? (
+                  {modelAircraft.length > 0 ? (
                     <ul className="list-disc pl-5">
-                      {modelData[`${selectedAircraft.brand} ${selectedAircraft.type}`].registrations.map((reg: string, index: number) => (
-                        <li key={index}>
+                      {modelAircraft.map((a) => (
+                        <li key={a.documentId}>
                           <button
                             onClick={() =>
                               handleRegClick({
                                 ...selectedAircraft,
-                                reg,
+                                reg: a.registration,
                               })
                             }
                             className="text-blue-800 hover:underline hover:text-blue-900"
                           >
-                            {reg}
+                            {a.registration}
                           </button>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p>No registrations available for this model.</p>
+                    <p className="text-sm text-gray-500">No registrations found for this model.</p>
                   )}
                 </div>
               </div>
@@ -795,77 +458,62 @@ export default function FlightTracker({ flying }: { flying: Aircraft[] }) {
                 Back to Home
               </button>
             </div>
-            {registrationData[selectedAircraft.reg] ? (
+            {selectedRegistration ? (
               <div>
-                <p className="mb-4">{registrationData[selectedAircraft.reg].description}</p>
                 <div className="mb-4">
-                  <h3 className="text-lg font-semibold">Image Gallery</h3>
-                  <div className="flex space-x-2 overflow-x-auto">
-                    {registrationData[selectedAircraft.reg].imageGallery.map((image: string, index: number) => (
-                      <img
-                        key={index}
-                        src={image}
-                        alt={`${selectedAircraft.reg} image ${index + 1}`}
-                        className="h-24 w-24 object-cover rounded"
-                      />
-                    ))}
+                  <h3 className="text-lg font-semibold mb-2">General Information</h3>
+                  <table className="w-full text-sm text-gray-700">
+                    <tbody>
+                      <tr>
+                        <td className="font-medium pr-2">Registration:</td>
+                        <td>{selectedRegistration.registration}</td>
+                      </tr>
+                      {selectedRegistration.model?.brand && (
+                        <tr>
+                          <td className="font-medium pr-2">Brand:</td>
+                          <td>{selectedRegistration.model.brand.name}</td>
+                        </tr>
+                      )}
+                      {selectedRegistration.model && (
+                        <tr>
+                          <td className="font-medium pr-2">Model:</td>
+                          <td>{selectedRegistration.model.name}</td>
+                        </tr>
+                      )}
+                      {selectedRegistration.icao_code && (
+                        <tr>
+                          <td className="font-medium pr-2">ICAO:</td>
+                          <td>{selectedRegistration.icao_code}</td>
+                        </tr>
+                      )}
+                      {selectedRegistration.serial_number && (
+                        <tr>
+                          <td className="font-medium pr-2">Serial:</td>
+                          <td>{selectedRegistration.serial_number}</td>
+                        </tr>
+                      )}
+                      {selectedRegistration.built_year != null && (
+                        <tr>
+                          <td className="font-medium pr-2">Built:</td>
+                          <td>{selectedRegistration.built_year}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {selectedRegistration.story && (
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold mb-2">Story</h3>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedRegistration.story}</p>
                   </div>
-                </div>
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold">Links</h3>
-                  <ul className="list-disc pl-5">
-                    {registrationData[selectedAircraft.reg].links.map((link: string, index: number) => (
-                      <li key={index}>
-                        <a
-                          href={link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-800 hover:underline hover:text-blue-900"
-                        >
-                          Link {index + 1}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                )}
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Flight History</h3>
-                  {registrationData[selectedAircraft.reg].flightHistory.length > 0 ? (
-                    <ul className="space-y-2">
-                      {registrationData[selectedAircraft.reg].flightHistory.map((flight, index: number) => (
-                        <li
-                          key={index}
-                          className="bg-gray-50 p-2 rounded-md shadow-sm border border-gray-200 overflow-visible"
-                        >
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>{flight.takeoff}</span>
-                            <span>{flight.landing}</span>
-                          </div>
-                          <div className="flex justify-between items-center text-sm mb-1">
-                            <span>{format(new Date(flight.takeoffDateTime), "HH:mm")}</span>
-                            <span className="text-xs text-gray-600">
-                              {format(new Date(flight.takeoffDateTime), "dd/MM/yyyy")}
-                            </span>
-                            <span>{format(new Date(flight.landingDateTime), "HH:mm")}</span>
-                          </div>
-                          <div className="flex items-center mb-1">
-                            <span className="w-3 h-3 bg-gray-600 rounded-full relative -mr-1 ml-0.5"></span>
-                            <div className="flex-1 border-t border-gray-400 mx-0"></div>
-                            <span className="w-3 h-3 bg-gray-600 rounded-full relative -ml-1"></span>
-                          </div>
-                          <div className="text-xs text-gray-600 text-center">
-                            {formatDuration(flight.takeoffDateTime, flight.landingDateTime)}, {flight.distance} km
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No flight history available for this registration.</p>
-                  )}
+                  <p className="text-sm text-gray-500">Flight history coming soon.</p>
                 </div>
               </div>
             ) : (
-              <p>No wiki data available for {selectedAircraft.reg}.</p>
+              <p>No data available for {selectedAircraft.reg}.</p>
             )}
           </div>
         )}
